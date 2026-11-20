@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenIdle</title>
+<style>
+:root {
+  --bg: #15130f; --panel: #1f1c17; --panel2: #29251e; --line: #3a342a;
+  --text: #f1e9da; --dim: #a99d88; --accent: #f5a623; --good: #7fd18b; --bad: #ef6b5b;
+  --radius: 10px;
+  font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; }
+button { font: inherit; color: inherit; cursor: pointer; }
+header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+  padding: 12px 20px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; }
+header h1 { margin: 0; font-size: 20px; letter-spacing: .02em; }
+header .who { color: var(--dim); font-size: 13px; }
+header .tools { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--panel2); border-radius: 999px; padding: 4px 12px; font-size: 13px; }
+.chip.on { border-color: var(--accent); color: var(--accent); }
+#status.online { color: var(--good); } #status.offline, #status.connecting { color: var(--bad); }
+#resources { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px 20px; }
+.res { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--c, var(--accent));
+  border-radius: var(--radius); padding: 8px 14px; min-width: 150px; }
+.res .n { font-size: 22px; font-variant-numeric: tabular-nums; font-weight: 600; }
+.res .l { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: .06em; }
+.res .r { font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.res .r.neg { color: var(--bad); }
+.res .world { font-size: 10px; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+main { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(300px, 1.5fr) minmax(260px, 1.2fr); gap: 16px; padding: 0 20px 30px; }
+main.online { grid-template-columns: minmax(220px, 1fr) minmax(300px, 1.5fr) minmax(260px, 1.2fr) minmax(220px, 1fr); }
+@media (max-width: 1000px) { main, main.online { grid-template-columns: 1fr; } }
+section h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); margin: 14px 0 8px; font-weight: 600; }
+.list { display: flex; flex-direction: column; gap: 8px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+.card .t { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.card .name { font-weight: 600; }
+.card .owned { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+.card .d { font-size: 13px; color: var(--dim); margin: 2px 0 6px; }
+.card .cost { font-size: 13px; font-variant-numeric: tabular-nums; }
+.card .cost .short { color: var(--bad); }
+.row { display: flex; gap: 6px; margin-top: 6px; }
+.btn { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #1b1408; font-weight: 600; }
+.act { width: 100%; padding: 16px; font-size: 17px; font-weight: 600; border-radius: var(--radius); position: relative; overflow: hidden; }
+.act .bar { position: absolute; left: 0; bottom: 0; height: 4px; background: var(--accent); }
+.act small { display: block; font-weight: 400; font-size: 12px; color: var(--dim); }
+.act.active { box-shadow: 0 0 0 2px var(--accent) inset; }
+.upg.bought { opacity: .55; }
+.upg.bought .btn { display: none; }
+.badge { font-size: 11px; color: var(--dim); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+.mile { display: flex; gap: 8px; align-items: center; font-size: 14px; padding: 6px 10px; }
+.mile .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); flex: none; }
+.mile.done .dot { background: var(--good); }
+.prest { border-color: #8ab4ff55; }
+.players .p { display: flex; justify-content: space-between; font-size: 14px; padding: 3px 0; }
+.players .p.me { color: var(--accent); }
+.players .p .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--line); margin-right: 6px; }
+.players .p.on .dot { background: var(--good); }
+#chatlog { height: 220px; overflow-y: auto; font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
+#chatlog b { color: var(--accent); font-weight: 600; }
+#chatform { display: flex; gap: 6px; margin-top: 6px; }
+#chatform input { flex: 1; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; color: var(--text); padding: 6px 8px; font: inherit; }
+#toasts { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 20; }
+.toast { background: var(--panel2); border: 1px solid var(--accent); border-radius: var(--radius); padding: 10px 14px; max-width: 320px;
+  animation: in .25s ease-out; box-shadow: 0 6px 20px #0008; }
+@keyframes in { from { transform: translateY(10px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 14px; max-width: 460px; width: 90vw; }
+dialog::backdrop { background: #000a; }
+dialog textarea { width: 100%; height: 120px; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; font: 12px monospace; }
+.empty { color: var(--dim); font-size: 13px; font-style: italic; }
+#fatal { padding: 40px; color: var(--bad); white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1 id="title">OpenIdle</h1>
+    <div class="who"><span id="who"></span> · <span id="status"></span></div>
+  </div>
+  <div class="tools" id="tools">
+    <button class="chip" id="autoplay" title="Let the bot play">Autoplay</button>
+    <button class="chip" id="export">Export</button>
+    <button class="chip" id="import">Import</button>
+    <button class="chip" id="reset">Reset</button>
+  </div>
+</header>
+<div id="resources"></div>
+<main id="main">
+  <section><h2>Actions</h2><div class="list" id="actions"></div>
+    <div id="prestigeBox"><h2>Prestige</h2><div class="list" id="prestiges"></div></div></section>
+  <section><h2>Generators</h2><div class="list" id="generators"></div></section>
+  <section><h2>Upgrades</h2><div class="list" id="upgrades"></div>
+    <h2>Milestones</h2><div class="list" id="milestones"></div></section>
+  <section id="social" hidden><h2>Players</h2><div class="card players" id="players"></div>
+    <h2>Chat</h2><div class="card"><div id="chatlog"></div>
+    <form id="chatform"><input id="chatinput" maxlength="300" placeholder="Say something"><button class="btn">Send</button></form></div></section>
+</main>
+<div id="toasts"></div>
+<dialog id="dialog"><div id="dialogBody"></div><div class="row" style="justify-content:flex-end"><button class="btn" id="dialogOk">OK</button></div></dialog>
+<script type="module" src="play.js"></script>
+</body>
+</html>

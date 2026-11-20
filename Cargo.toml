@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = ["crates/openidle", "crates/openidle-cli", "crates/openidle-web", "crates/openidle-server"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/sirmmo/openidle"
+rust-version = "1.82"
+
+[workspace.dependencies]
+openidle = { path = "crates/openidle", version = "0.1.0" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# cargo build --profile wasm --target wasm32-unknown-unknown -p openidle-web
+[profile.wasm]
+inherits = "release"
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,156 @@
+# Sparks: the player's own game.
+
+resource Sparks
+    text The fire you make.
+    view color #f5a623
+end
+
+resource Embers
+    text Forged from sparks; their store is small.
+    cap 50 * 1.6 ^ Brazier
+    show if Forge > 0
+    view color #e0532f
+end
+
+resource Stars
+    text Kept when you ascend. Each makes everything 10% faster.
+    show if Stars > 0 or total(Sparks) >= $ascend_at / 2
+    boost all 1 + 0.1 * Stars
+    view color #8ab4ff
+end
+
+resource Gems
+    text Found at milestones. Gems can be given to other players.
+    show if Gems > 0
+    giftable
+end
+
+# ------------------------------------------------------------------ clicking
+
+action strike
+    label Strike
+    text Strike a spark by hand.
+    out Sparks $strike * (1 + Flint)
+end
+
+action focus
+    label Focus
+    text Everything goes three times as fast for ten seconds.
+    cooldown 60
+    lasts 10
+    boost all 3
+    show if Kindler >= 5
+end
+
+# ------------------------------------------------------------------ generators
+
+generator Kindler
+    text Makes sparks.
+    cost Sparks 10 * $growth ^ owned
+end
+
+rule kindle
+    appliesTo Kindler
+    out Sparks $kindler_rate
+end
+
+generator Bellows
+    text Makes many more sparks.
+    cost Sparks 120 * 1.17 ^ owned
+    show if Kindler >= 3
+end
+
+rule blow
+    appliesTo Bellows
+    out Sparks $bellows_rate
+end
+
+generator Forge
+    text Burns sparks into embers.
+    cost Sparks 1000 * 1.2 ^ owned
+    show if Bellows >= 2
+end
+
+rule forge
+    appliesTo Forge
+    in Sparks $forge_burn
+    out Embers $forge_make
+end
+
+generator Brazier
+    text Holds 60% more embers.
+    cost Embers 40 * 1.5 ^ owned
+    show if Embers >= 25
+end
+
+# ------------------------------------------------------------------ upgrades
+
+upgrade Flint
+    label Flint
+    text Strikes give twice as much.
+    cost Sparks 50
+    show if total(Sparks) >= 20
+end
+
+upgrade DryWood
+    label Dry wood
+    text Kindlers make twice as much.
+    cost Sparks 200
+    boost Kindler 2
+    show if Kindler >= 5
+end
+
+upgrade Leather
+    label Leather bellows
+    text Bellows make twice as much.
+    cost Sparks 2000
+    boost Bellows 2
+    show if Bellows >= 5
+end
+
+upgrade Glow
+    label Ember glow
+    text Every ember you hold makes sparks 1% faster.
+    cost Embers 40
+    boost Sparks 1 + 0.01 * Embers
+    show if Embers >= 20
+end
+
+upgrade Thrift
+    text Generators cost 10% less.
+    cost Embers 100
+    discount all 0.9
+    show if Brazier >= 1
+end
+
+# ------------------------------------------------------------------ milestones
+
+milestone hundred
+    label A hundred sparks
+    if total(Sparks) >= 100
+    do add Gems 1
+end
+
+milestone kindlers
+    label Ten kindlers
+    if Kindler >= 10
+    boost Kindler 1.5
+    do add Gems 1
+end
+
+milestone bonfire
+    label A million sparks
+    if ever(Sparks) >= 1e6
+    boost all 1.25
+    do add Gems 5
+end
+
+# ------------------------------------------------------------------ prestige
+
+prestige ascend
+    label Ascend
+    text Start again with nothing but your stars and gems.
+    gain Stars floor(sqrt(total(Sparks) / $ascend_at))
+    keep Gems
+    show if total(Sparks) >= $ascend_at / 2 or ascend > 0
+end

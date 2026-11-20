@@ -1,0 +1,34 @@
+# The beacon: what the players of a world share. Alone, you feed it by yourself.
+
+resource Beacon
+    scope world
+    text Every kindler in the world feeds the beacon; it fades a little every second.
+    show if Beacon > 0
+    view color #ffe08a
+end
+
+rule feed
+    appliesTo Kindler
+    out Beacon $beacon_share
+end
+
+rule fade
+    scope world
+    in Beacon $beacon_fade * Beacon
+end
+
+milestone lit
+    label The beacon is lit
+    scope world
+    text Once the beacon has held 100, everyone's sparks come 50% faster, for good.
+    if Beacon >= 100
+    boost Sparks 1.5
+end
+
+upgrade Lighthouse
+    scope world
+    text Built from the beacon by anyone, for everyone: everything twice as fast.
+    cost Beacon 500
+    boost all 2
+    show if Beacon >= 50
+end

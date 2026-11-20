@@ -1,0 +1,43 @@
+# Publishes web/ (the player, the engine as WebAssembly, every game's bundle) to GitHub Pages.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Build the engine and the games
+        run: |
+          cargo build --profile wasm --target wasm32-unknown-unknown -p openidle-web
+          cp target/wasm32-unknown-unknown/wasm/openidle_web.wasm web/openidle.wasm
+          cargo build --release -p openidle-cli
+          mkdir -p web/games
+          for g in games/*/; do ./target/release/openidle bundle "$g" -o "web/games/$(basename "$g").json"; done
+          touch web/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - id: deployment
+        uses: actions/deploy-pages@v4

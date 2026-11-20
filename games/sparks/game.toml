@@ -1,0 +1,7 @@
+# The demo: every feature of the engine in a small game. The real game's theme comes later.
+name = "Sparks"
+description = "Strike sparks, build kindlers and bellows, forge embers, ascend for stars, and feed the beacon everyone shares."
+scripts = ["sparks.idle", "world.idle"]
+tick = 0.2            # seconds
+offline_max = 28800   # eight hours of progress for time away
+score = "ever(Sparks)"

@@ -1,0 +1,16 @@
+[package]
+name = "openidle"
+description = "A deterministic engine for idle and incremental games, with the rules in data files"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+keywords = ["idle", "incremental", "game-engine", "glassbox", "wasm"]
+categories = ["game-engines", "simulation"]
+rust-version.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true

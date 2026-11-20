@@ -1,0 +1,10 @@
+# Every number here can be used as $name in the scripts and changed with --set name=value.
+strike = 1            # sparks per strike
+growth = 1.15         # each kindler costs this much more than the last
+kindler_rate = 1      # sparks a second per kindler
+bellows_rate = 8
+forge_burn = 10       # sparks a forge burns a second...
+forge_make = 1        # ...for this many embers
+ascend_at = 1e5       # sparks made in a run for the first star
+beacon_share = 0.01   # what each kindler gives the beacon a second
+beacon_fade = 0.002   # share of the beacon lost every second

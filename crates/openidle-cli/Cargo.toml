@@ -1,0 +1,17 @@
+[package]
+name = "openidle-cli"
+description = "The openidle command: check a game, play it with a bot to test its pace, bundle it for browsers"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+
+[[bin]]
+name = "openidle"
+path = "src/main.rs"
+
+[dependencies]
+openidle.workspace = true
+serde_json.workspace = true

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.95.0
+        with:
+          components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test --release
+      - name: Every game loads and plays
+        run: |
+          cargo build --release -p openidle-cli
+          for g in games/*/; do ./target/release/openidle play "$g" --minutes 20 --players 3 --quiet; done
+      - name: WebAssembly gives the same world as native code
+        run: |
+          cargo build --profile wasm --target wasm32-unknown-unknown -p openidle-web
+          wasm=target/wasm32-unknown-unknown/wasm/openidle_web.wasm
+          for g in games/*/; do
+            ./target/release/openidle bundle "$g" -o game.json
+            for p in 1 3; do
+              native=$(./target/release/openidle play "$g" --minutes 20 --players $p --quiet 2>&1 >/dev/null | sed -n 's/.*fingerprint //p')
+              web=$(node tools/crosscheck.mjs $wasm game.json 20 $p)
+              echo "$g, $p player(s): native $native, wasm $web"
+              test "$native" = "$web"
+            done
+          done
