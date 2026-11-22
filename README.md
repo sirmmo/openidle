@@ -23,6 +23,9 @@ follow it in lockstep, so everyone sees the whole world live.
 - **A bot** that plays a game faster than real time and says when everything happened: tune a
   game's pace in seconds (`openidle play`), or let it autoplay in the browser.
 
+**Play the demo** at <https://ingmmo.com/openidle/play/>, alone in your browser. These pages, as a
+site: <https://ingmmo.com/openidle/>.
+
 ## Quick start
 
 ```sh
@@ -31,8 +34,8 @@ follow it in lockstep, so everyone sees the whole world live.
 ./target/release/openidle play games/sparks --hours 2 --every 600
 ./target/release/openidle play games/sparks --minutes 30 --players 4 --set growth=1.2
 
-python3 -m http.server -d web 8000                     # alone: http://localhost:8000/
-OI_SITE=web ./target/release/openidle-server           # together: http://localhost:8080/?world=main
+python3 -m http.server -d web 8000                     # alone: http://localhost:8000/play/
+OI_SITE=web ./target/release/openidle-server           # together: http://localhost:8080/play/?world=main
 ```
 
 `play` prints the bot's game: when each thing unlocked, each milestone, upgrade and prestige,
@@ -95,7 +98,7 @@ game comes later).
 | `crates/openidle-web` | The engine as WebAssembly, driven by JSON messages (`oi_alloc`, `oi_call`, `oi_out_len`). |
 | `crates/openidle-server` | Shared worlds: WebSocket at `/ws`, saved worlds, a static site. |
 | `crates/openidle-cli` | The `openidle` command: `check`, `play`, `bundle`. |
-| `web/` | `openidle.js` (the engine for a page: `Local` and `Online` sessions, number formatting) and a plain player for any game. |
+| `web/` | The site: these docs (`index.html`), `openidle.js` (the engine for a page: `Local` and `Online` sessions, number formatting) and, in `play/`, a plain player for any game. |
 | `games/` | Games. |
 | `tools/crosscheck.mjs` | Plays a game in WebAssembly under Node; its fingerprint must equal the native one. |
 

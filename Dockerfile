@@ -1,4 +1,4 @@
-# The server, with the games and the browser player:
+# The server, with the games, the docs and the browser player (at /play/):
 #   docker build -t openidle . && docker run -p 8080:8080 -v openidle-data:/data openidle
 FROM rust:1.95 AS build
 RUN rustup target add wasm32-unknown-unknown
@@ -7,7 +7,8 @@ COPY . .
 RUN cargo build --release -p openidle-server -p openidle-cli \
  && cargo build --profile wasm --target wasm32-unknown-unknown -p openidle-web \
  && cp target/wasm32-unknown-unknown/wasm/openidle_web.wasm web/openidle.wasm \
- && mkdir -p web/games \
+ && mkdir -p web/games web/docs \
+ && cp --remove-destination README.md docs/*.md web/docs/ \
  && for g in games/*/; do ./target/release/openidle bundle "$g" -o "web/games/$(basename "$g").json"; done
 
 FROM debian:bookworm-slim

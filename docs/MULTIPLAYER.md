@@ -68,7 +68,7 @@ From the server:
 
 ```sh
 cargo build --release -p openidle-server
-OI_SITE=web ./target/release/openidle-server     # then http://localhost:8080/?world=main
+OI_SITE=web ./target/release/openidle-server     # then http://localhost:8080/play/?world=main
 ```
 
 | Variable | Default | |

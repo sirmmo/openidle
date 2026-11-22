@@ -1,10 +1,13 @@
 // The browser player: draws any OpenIdle game from the engine's view, alone or in a shared
 // world. It is plain on purpose; a game can bring its own page and use openidle.js the same way.
 //
-//   index.html?game=sparks                          alone, saved in this browser
-//   index.html?game=sparks&world=main               in a world on the server this page came from
-//   index.html?game=sparks&world=main&server=wss://example.org/ws
-import { engine, Local, Online, format, duration, log10 } from './openidle.js';
+//   play/?game=sparks                          alone, saved in this browser
+//   play/?game=sparks&world=main               in a world on the server this page came from
+//   play/?game=sparks&world=main&server=wss://example.org/ws
+//
+// The engine (../openidle.js, ../openidle.wasm) and the games (../games/) sit one level up,
+// where any other page can use them too.
+import { engine, Local, Online, format, duration, log10 } from '../openidle.js';
 
 const q = new URLSearchParams(location.search);
 const gameName = q.get('game') || 'sparks';
@@ -260,7 +263,7 @@ function nameOf(id) {
 }
 
 async function main() {
-  const call = await engine('openidle.wasm');
+  const call = await engine('../openidle.wasm');
   if (online) {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const url = q.get('server') || `${proto}//${location.host}/ws`;
@@ -291,7 +294,7 @@ async function main() {
     session.on(onEvents);
     session.start();
   } else {
-    const bundle = await (await fetch(`games/${gameName}.json`)).json();
+    const bundle = await (await fetch(`../games/${gameName}.json`)).json();
     session = new Local(call, bundle, gameName);
     session.on(onEvents);
     $('status').textContent = 'solo';

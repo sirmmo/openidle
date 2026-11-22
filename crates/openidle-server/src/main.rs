@@ -71,7 +71,8 @@ fn allowed(origin: &str, origins: &[String]) -> bool {
         .any(|a| a == "*" || origin == a || origin.starts_with(&format!("{a}:")))
 }
 
-/// A request's head, peeked at without reading it: (its length, method, path, is it a WebSocket).
+/// A request's head, peeked at without reading it: (its length, method, target, is it a WebSocket).
+/// The target is the path with its query, if any.
 async fn peek_head(stream: &TcpStream) -> Option<(usize, String, String, bool)> {
     let mut buf = vec![0u8; 8192];
     for _ in 0..250 {
@@ -84,13 +85,13 @@ async fn peek_head(stream: &TcpStream) -> Option<(usize, String, String, bool)> 
             let mut lines = head.lines();
             let mut first = lines.next()?.split(' ');
             let method = first.next()?.to_string();
-            let path = first.next()?.split('?').next()?.to_string();
+            let target = first.next()?.to_string();
             let ws = lines.any(|l| {
                 l.split_once(':').is_some_and(|(k, v)| {
                     k.trim().eq_ignore_ascii_case("upgrade") && v.to_ascii_lowercase().contains("websocket")
                 })
             });
-            return Some((end + 4, method, path, ws));
+            return Some((end + 4, method, target, ws));
         }
         if n == buf.len() {
             return None;
@@ -117,11 +118,13 @@ fn content_type(path: &Path) -> &'static str {
 }
 
 /// Answers a plain HTTP request.
-async fn http(mut stream: TcpStream, len: usize, method: &str, path: &str, server: &Server) {
+async fn http(mut stream: TcpStream, len: usize, method: &str, target: &str, server: &Server) {
     let mut head = vec![0u8; len];
     if stream.read_exact(&mut head).await.is_err() {
         return;
     }
+    let (path, query) = target.split_once('?').unwrap_or((target, ""));
+    let mut location = None;
     let found = |kind: &'static str, body: Vec<u8>| ("200 OK", kind, body);
     let missing = ("404 Not Found", "text/plain", b"not here\n".to_vec());
     let (status, kind, body) = match method {
@@ -141,12 +144,23 @@ async fn http(mut stream: TcpStream, len: usize, method: &str, path: &str, serve
             p => match &server.site {
                 Some(site) if !p.split('/').any(|s| s == "..") => {
                     let mut file = site.join(p.trim_start_matches('/'));
-                    if file.is_dir() {
-                        file = file.join("index.html");
-                    }
-                    match tokio::fs::read(&file).await {
-                        Ok(b) => found(content_type(&file), b),
-                        Err(_) => missing.clone(),
+                    if file.is_dir() && !p.ends_with('/') {
+                        // A folder's page links relative to the folder: /play becomes /play/.
+                        let q = if query.is_empty() {
+                            String::new()
+                        } else {
+                            format!("?{query}")
+                        };
+                        location = Some(format!("/{}/{q}", p.trim_matches('/')));
+                        ("301 Moved Permanently", "text/plain", b"moved\n".to_vec())
+                    } else {
+                        if file.is_dir() {
+                            file = file.join("index.html");
+                        }
+                        match tokio::fs::read(&file).await {
+                            Ok(b) => found(content_type(&file), b),
+                            Err(_) => missing.clone(),
+                        }
                     }
                 }
                 _ => missing.clone(),
@@ -157,8 +171,9 @@ async fn http(mut stream: TcpStream, len: usize, method: &str, path: &str, serve
     let mut reply = format!(
         "HTTP/1.1 {status}\r\nContent-Type: {kind}\r\nContent-Length: {}\r\n\
          Cache-Control: no-cache\r\nX-Content-Type-Options: nosniff\r\n\
-         Access-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n",
-        body.len()
+         Access-Control-Allow-Origin: *\r\nConnection: close\r\n{}\r\n",
+        body.len(),
+        location.map_or(String::new(), |l| format!("Location: {l}\r\n"))
     )
     .into_bytes();
     if method != "HEAD" {
@@ -172,13 +187,13 @@ async fn http(mut stream: TcpStream, len: usize, method: &str, path: &str, serve
 #[allow(clippy::result_large_err)]
 async fn connection(stream: TcpStream, server: Arc<Server>, id: u64) {
     let head = tokio::time::timeout(Duration::from_secs(10), peek_head(&stream)).await;
-    let Ok(Some((len, method, path, ws))) = head else {
+    let Ok(Some((len, method, target, ws))) = head else {
         return;
     };
     if !ws {
-        return http(stream, len, &method, &path, &server).await;
+        return http(stream, len, &method, &target, &server).await;
     }
-    if path != "/ws" {
+    if target.split('?').next() != Some("/ws") {
         return;
     }
     let origins = server.origins.clone();
