@@ -279,6 +279,26 @@ impl World {
         Some(self.s.players[self.index(player?)?].amount[r])
     }
 
+    /// Credits a resource from outside the game, as if a rule had made it: income from another
+    /// engine that hosts this one (an inn's takings, the guests it served). It counts in `total`
+    /// and `ever` and stops at the cap, like production; a negative amount takes away, down to
+    /// zero. `player` is `None` for a world resource.
+    pub fn credit(&mut self, player: Option<&str>, res: &str, x: Num) -> Result<(), String> {
+        let r = match self.game.thing(res) {
+            Some(Thing::Res(r)) => r,
+            _ => return Err(format!("there is no resource {res:?}")),
+        };
+        let p = match player {
+            Some(id) => Some(self.index(id).ok_or("no such player")?),
+            None if self.game.resources[r].scope == Scope::World => None,
+            None => return Err(format!("{res} belongs to a player")),
+        };
+        let x = if x.is_negative() { x.max(-self.have(p, r)) } else { x };
+        let cap = self.cap(p, r);
+        self.give(p, r, x, cap, false);
+        Ok(())
+    }
+
     /// The value of any expression for a player (or the world): `"Miner"`, `"total(Gold)"`.
     pub fn eval(&self, player: Option<&str>, text: &str) -> Result<Num, String> {
         let p = match player {
