@@ -1,0 +1,140 @@
+# Levels 5 and 6: the stars. Ascend to start again with stars; telescopes turn stars into
+# stardust, which buys constellations that are kept when you ascend. Go supernova to trade
+# every star for novae.
+
+milestone L6
+    view tier 6
+    label Level 6 · Stargazing
+    text Ascend once.
+    if ascend >= 1
+    do add Gems 5
+    view kind level
+end
+
+milestone L8
+    view tier 8
+    label Level 8 · Supernova
+    text Go supernova once.
+    if supernova >= 1
+    do add Gems 10
+    view kind level
+end
+
+resource Stars
+    text Kept when you ascend. Each makes sparks, embers, iron and light faster.
+    show if Stars > 0 or L4
+    boost Sparks 1 + if(Polaris, 1.5, 1) * $star_boost * Stars
+    boost Embers 1 + if(Polaris, 1.5, 1) * $star_boost * Stars
+    boost Iron 1 + if(Polaris, 1.5, 1) * $star_boost * Stars
+    boost Light 1 + if(Polaris, 1.5, 1) * $star_boost * Stars
+    view color #8ab4ff
+end
+
+resource Stardust
+    text Telescopes gather it; constellations cost it. Kept when you ascend.
+    show if L6
+    view color #c9b6ff
+end
+
+resource Novae
+    text What stars become. Kept until the Big Bang. Everything, stardust too, goes faster with the square root of your novae.
+    show if Novae > 0 or L8
+    boost all 1 + sqrt(Novae)
+    boost Stardust 1 + sqrt(Novae)
+    view color #ff8ad8
+end
+
+prestige ascend
+    label Ascend
+    text Start again with your stars, stardust, constellations, sky, void and gems. Your path is yours to choose again.
+    gain Stars floor(sqrt(total(Sparks) / $ascend_at) * (1 + Tidal))
+    if gain >= 1 and L4
+    keep Gems Stardust Novae Strikes Comets Dark Universes
+    keep Orion Lyra Cassiopeia Draco Polaris Pegasus Andromeda
+    keep Comet Nebula Starcradle
+    keep Singularity Horizon Hawking Tidal Wormhole Quasar
+    keep $gem_shop
+    show if L4
+end
+
+prestige supernova
+    label Supernova
+    text Every star, the stardust, the constellations and your sky go; novae come, and stay until the Big Bang.
+    gain Novae floor(sqrt(Stars / $nova_at) * (1 + Hawking))
+    if gain >= 1
+    keep Gems Strikes Dark Universes
+    keep Singularity Horizon Hawking Tidal Wormhole Quasar
+    keep $gem_shop
+    show if Stars >= $nova_at / 2 or supernova > 0
+end
+
+generator Telescope
+    text Gathers stardust: more for every star you have.
+    cost Light 1000 * 1.3 ^ owned
+    show if L6
+end
+
+rule gaze
+    appliesTo Telescope
+    out Stardust $gaze_rate * (1 + Stars)
+end
+
+action wish
+    label Wish
+    text Wish on a falling star: a gem, one time in two.
+    do add Gems if(Lucky, 1, chance(0.5))
+    cooldown 600
+    show if L6
+end
+
+# ------------------------------------------------------------------ constellations (kept when ascending)
+
+upgrade Orion
+    text Kindlers, bellows and hearths make ten times as much.
+    cost Stardust 10
+    boost Kindler 10
+    boost Bellows 10
+    boost Hearth 10
+    show if L6
+end
+
+upgrade Cassiopeia
+    text Hold four times as many embers.
+    cost Stardust 25
+    show if L6
+end
+
+upgrade Lyra
+    text Three times as much light.
+    cost Stardust 60
+    boost Light 3
+    show if Orion
+end
+
+upgrade Draco
+    text Forges and smelters work five times as fast.
+    cost Stardust 150
+    boost Forge 5
+    boost Smelter 5
+    show if Lyra
+end
+
+upgrade Pegasus
+    text Actions give ten times as much.
+    cost Stardust 400
+    boost actions 10
+    show if Draco
+end
+
+upgrade Polaris
+    text Stars are half as strong again.
+    cost Stardust 1000
+    show if Pegasus
+end
+
+upgrade Andromeda
+    text Sparks twice as fast for every tenfold of stardust you hold.
+    cost Stardust 3000
+    boost Sparks 1 + log10(1 + Stardust)
+    show if Polaris
+end

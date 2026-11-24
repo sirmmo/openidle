@@ -1,10 +1,53 @@
 # Every number here can be used as $name in the scripts and changed with --set name=value.
+
+# The hearth
 strike = 1            # sparks per strike
 growth = 1.15         # each kindler costs this much more than the last
 kindler_rate = 1      # sparks a second per kindler
 bellows_rate = 8
-forge_burn = 10       # sparks a forge burns a second...
+hearth_rate = 90
+forge_burn = 25       # sparks a forge burns a second...
 forge_make = 1        # ...for this many embers
-ascend_at = 1e5       # sparks made in a run for the first star
+ember_cap = 50        # embers held without braziers
+
+# Iron
+smelt_burn = 2        # embers a smelter burns a second...
+smelt_sparks = 100    # ...and sparks...
+smelt_make = 1        # ...for this much iron
+iron_age_at = 2000    # embers made, ever, for the Iron Age
+
+# Light
+lantern_burn = 1      # embers a lantern burns a second...
+lantern_make = 1      # ...for this much light
+light_age_at = 1e4    # iron made, ever, for the Age of Light
+
+# Stars
+ascend_at = 3e10      # sparks made in a run for the first star
+star_boost = 0.1      # each star: everything this much faster
+gaze_rate = 0.05      # stardust a second per telescope, per star (plus one)
+nova_at = 1000        # stars for the first nova
+
+# The beacon everyone shares
 beacon_share = 0.01   # what each kindler gives the beacon a second
+lantern_share = 0.2   # what each lantern gives
 beacon_fade = 0.002   # share of the beacon lost every second
+
+# Paths (level 5): one a run
+path_cost = 2000      # light for a path (and twice as much iron)
+clockwork_cost = 1    # each path's price, times path_cost
+alchemy_cost = 1
+glass_cost = 1
+path_goal = 1000      # gears, gold or glass for the path's level
+
+# Skies (level 7): one until the next supernova
+sky_cost = 300        # stardust for a sky
+comet_goal = 10       # comets for the comet's level
+cradle_goal = 15      # star cradles for the nebula's level
+
+# The void and the Big Bang
+void_goal = 1e8       # dark matter for the Void
+bang_at = 2000        # novae for the first universe
+multiverse_at = 5    # universes for the last level
+
+# What every prestige keeps: the gem shop
+gem_shop = "Polish Facets Hoard Charm Heirloom Hearthstone Lucky Compass"

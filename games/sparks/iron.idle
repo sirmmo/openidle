@@ -1,0 +1,75 @@
+# Level 3: iron. Smelters burn embers and sparks into iron; anvils make everything hotter.
+
+milestone L3
+    view tier 3
+    label Level 3 · The Iron Age
+    text Make $iron_age_at embers in all.
+    if ever(Embers) >= $iron_age_at
+    do add Gems 2
+    view kind level
+end
+
+resource Iron
+    text Smelted from embers and sparks.
+    show if L3
+    view color #9aa5b1
+end
+
+generator Smelter
+    text Burns embers and sparks into iron.
+    cost Sparks 40000 * 1.22 ^ owned
+    cost Embers 60 * 1.22 ^ owned
+    show if L3
+end
+
+rule smelt
+    appliesTo Smelter
+    in Embers $smelt_burn
+    in Sparks $smelt_sparks
+    out Iron $smelt_make
+end
+
+generator Anvil
+    text Each anvil makes sparks 10% faster.
+    cost Iron 25 * 1.4 ^ owned
+    boost Sparks 1 + 0.1 * Anvil
+    show if Iron >= 10
+end
+
+action hammer
+    label Hammer
+    text Beat out iron by hand: ten for every anvil.
+    out Iron 10 * (1 + Anvil)
+    cooldown 120
+    show if L3
+end
+
+upgrade Coke
+    text Smelters work twice as fast.
+    cost Iron 100
+    boost Smelter 2
+    show if Smelter >= 3
+end
+
+upgrade Steel
+    label Steel bellows
+    text Bellows make five times as much.
+    cost Iron 300
+    boost Bellows 5
+    show if Anvil >= 3
+end
+
+upgrade Grate
+    label Iron grate
+    text Forges work three times as fast.
+    cost Iron 500
+    boost Forge 3
+    show if Smelter >= 5
+end
+
+upgrade Ironwood
+    text Kindlers make 1% more for every ten iron you hold, up to five times as much.
+    cost Iron 2000
+    boost Kindler min(5, 1 + 0.001 * Iron)
+    show if Anvil >= 5
+end

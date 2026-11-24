@@ -1,0 +1,198 @@
+# Goals: milestones that reward gems and boosts. They are kept through every prestige.
+
+milestone hundred
+    label A hundred sparks
+    if ever(Sparks) >= 100
+    do add Gems 1
+end
+
+milestone tenthousand
+    label Ten thousand sparks
+    if ever(Sparks) >= 1e4
+    do add Gems 1
+end
+
+milestone bonfire
+    label A million sparks
+    text Sparks 25% faster.
+    if ever(Sparks) >= 1e6
+    boost Sparks 1.25
+    do add Gems 2
+end
+
+milestone wildfire
+    label A billion sparks
+    if ever(Sparks) >= 1e9
+    do add Gems 3
+end
+
+milestone firestorm
+    label A trillion sparks
+    text Sparks 50% faster.
+    if ever(Sparks) >= 1e12
+    boost Sparks 1.5
+    do add Gems 5
+end
+
+milestone sunfire
+    label A quadrillion sparks
+    if ever(Sparks) >= 1e15
+    do add Gems 8
+end
+
+milestone starfire
+    label 1e20 sparks
+    text Sparks twice as fast.
+    if ever(Sparks) >= 1e20
+    boost Sparks 2
+    do add Gems 13
+end
+
+milestone kindlers
+    label Ten kindlers
+    text Kindlers make 50% more.
+    if Kindler >= 10
+    boost Kindler 1.5
+    do add Gems 1
+end
+
+milestone grove
+    label Fifty kindlers
+    text Kindlers make twice as much.
+    if Kindler >= 50
+    boost Kindler 2
+    do add Gems 2
+end
+
+milestone forest
+    label A hundred kindlers
+    text Kindlers make three times as much.
+    if Kindler >= 100
+    boost Kindler 3
+    do add Gems 3
+end
+
+milestone gale
+    label Twenty-five bellows
+    text Bellows make twice as much.
+    if Bellows >= 25
+    boost Bellows 2
+    do add Gems 2
+end
+
+milestone furnace
+    label Ten hearths
+    text Hearths make twice as much.
+    if Hearth >= 10
+    boost Hearth 2
+    do add Gems 2
+end
+
+milestone smithy
+    label Ten forges
+    text Forges work twice as fast.
+    if Forge >= 10
+    boost Forge 2
+    do add Gems 2
+end
+
+milestone foundry
+    label Ten smelters
+    text Smelters work twice as fast.
+    if Smelter >= 10
+    boost Smelter 2
+    do add Gems 3
+end
+
+milestone lamplit
+    label Twenty-five lanterns
+    text Lanterns twice as bright.
+    if Lantern >= 25
+    boost Lantern 2
+    do add Gems 3
+end
+
+milestone Calloused
+    label Calloused hands
+    text A hundred strikes: strikes give five times as much.
+    if ever(Strikes) >= 100
+    do add Gems 1
+end
+
+milestone blacksmith
+    label A thousand strikes
+    text Actions give twice as much.
+    if ever(Strikes) >= 1000
+    boost actions 2
+    do add Gems 2
+end
+
+milestone constellation
+    label Ten stars
+    if Stars >= 10
+    do add Gems 5
+end
+
+milestone galaxy
+    label A hundred stars
+    if Stars >= 100
+    do add Gems 10
+end
+
+milestone dusty
+    label A thousand stardust
+    if ever(Stardust) >= 1000
+    do add Gems 5
+end
+
+milestone gearhead
+    label A million gears
+    if ever(Gears) >= 1e6
+    do add Gems 5
+end
+
+milestone goldfinger
+    label A million gold
+    if ever(Gold) >= 1e6
+    do add Gems 5
+end
+
+milestone glassblower
+    label A million glass
+    if ever(Glass) >= 1e6
+    do add Gems 5
+end
+
+milestone wanderer
+    label Every path walked
+    text Reach the level of all three paths: everything twice as fast.
+    if L5a and L5b and L5c
+    boost all 2
+    do add Gems 25
+end
+
+milestone skywalker
+    label Both skies
+    text Reach the level of both skies: stardust three times as fast.
+    if L7a and L7b
+    boost Stardust 3
+    do add Gems 25
+end
+
+milestone hundredcomets
+    label A hundred comets
+    if Comets >= 100
+    do add Gems 10
+end
+
+milestone abyss
+    label Ten thousand dark matter
+    if ever(Dark) >= 1e4
+    do add Gems 15
+end
+
+milestone trinity
+    label Three universes
+    if Universes >= 3
+    do add Gems 25
+end

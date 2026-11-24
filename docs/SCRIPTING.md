@@ -6,8 +6,9 @@ A game is a folder:
 games/sparks/
 ├── game.toml       its name, its scripts, the length of a tick
 ├── params.toml     its numbers, used as $name everywhere
-├── sparks.idle     blocks: resources, generators, rules, upgrades, ...
-└── world.idle      more blocks (any number of files, read in the order game.toml lists them)
+├── hearth.idle     blocks: resources, generators, rules, upgrades, ...
+├── ...             more blocks (any number of files, read in the order game.toml lists them)
+└── world.idle
 ```
 
 `openidle check games/sparks` reads a game and lists what it declares; errors give the file and
@@ -20,7 +21,7 @@ game's pace. `openidle bundle games/sparks` writes it as one JSON file for the b
 ```toml
 name = "Sparks"
 description = "Strike sparks, build kindlers ..."
-scripts = ["sparks.idle", "world.idle"]
+scripts = ["hearth.idle", "iron.idle", "light.idle", "stars.idle", "gems.idle", "goals.idle", "world.idle"]
 tick = 0.2            # seconds a tick lasts (default 0.2)
 offline_max = 28800   # most seconds of progress for time away (default 86400)
 score = "ever(Sparks)"  # an expression that ranks players (optional)
@@ -62,7 +63,7 @@ Every kind but `rule` takes:
 | `label <text>` | the name players see (default: the id, `_` as spaces) |
 | `text <text>` | a description (several `text` lines are joined) |
 | `show if <condition>` | hidden until the condition is true for the player, then shown for good; without it, shown from the start |
-| `view <key> <value>` | anything for the page that draws the game (a colour, an icon); the engine passes it on |
+| `view <key> <value>` | anything for the page that draws the game (a colour, an icon); the engine passes it on. The player in `web/play/` reads `view color #hex`; on milestones `view kind level` and `view tier N`, the game's levels (several in one tier are branches, shown side by side, the next ones' `text` as goals); on upgrades `view kind path`, a choice of one among several |
 | `boost <target> <factor>` | multiplies production (below) |
 | `discount <target> <factor>` | multiplies costs (below) |
 
@@ -188,6 +189,31 @@ A prestige resets every player resource to its `start` (and its `total` to 0), e
 generator to its `start` and every player upgrade, except what `keep` lists and what it gains.
 Milestones, `ever` amounts, contributions and what the player has seen are kept. Its count is its
 value in expressions (how many times the player took it).
+
+## Levels and branches
+
+Levels are milestones, so they are reached once and kept. A branch is a choice of upgrades that
+rule each other out; what a prestige resets can be chosen again, so each run can take another
+path. The demo's level 5:
+
+```text
+upgrade Clockwork
+    cost Light 2000
+    if not Alchemy and not Glassworks   # one path a run: ascending resets upgrades
+    view kind path
+end
+
+milestone L5a
+    label Level 5 · Clockwork
+    text Take the path of clockwork and make 1000 gears.
+    if ever(Gears) >= 1000
+    view kind level
+    view tier 5                         # L5b and L5c are tier 5 too: three branches
+end
+```
+
+A milestone such as `if L5a and L5b and L5c` rewards walking them all. To keep a choice longer,
+list it in a prestige's `keep` (the demo's skies last until the next supernova).
 
 ## Boosts and discounts
 

@@ -1,4 +1,22 @@
-# Sparks: the player's own game.
+# Levels 1 and 2: the hearth and the forge. Sparks by hand, then by kindlers, bellows and hearths;
+# forges burn sparks into embers, which are hard to store.
+
+milestone L1
+    view tier 1
+    label Level 1 · The hearth
+    text Strike sparks and build kindlers.
+    if 1
+    view kind level
+end
+
+milestone L2
+    view tier 2
+    label Level 2 · The forge
+    text Build a forge.
+    if Forge >= 1
+    do add Gems 1
+    view kind level
+end
 
 resource Sparks
     text The fire you make.
@@ -7,22 +25,14 @@ end
 
 resource Embers
     text Forged from sparks; their store is small.
-    cap 50 * 1.6 ^ Brazier
-    show if Forge > 0
+    cap $ember_cap * 1.6 ^ Brazier * if(Cassiopeia, 4, 1) * if(Hearthstone, 10, 1)
+    show if L2
     view color #e0532f
 end
 
-resource Stars
-    text Kept when you ascend. Each makes everything 10% faster.
-    show if Stars > 0 or total(Sparks) >= $ascend_at / 2
-    boost all 1 + 0.1 * Stars
-    view color #8ab4ff
-end
-
-resource Gems
-    text Found at milestones. Gems can be given to other players.
-    show if Gems > 0
-    giftable
+resource Strikes
+    text Times you struck a spark.
+    hidden
 end
 
 # ------------------------------------------------------------------ clicking
@@ -30,7 +40,8 @@ end
 action strike
     label Strike
     text Strike a spark by hand.
-    out Sparks $strike * (1 + Flint)
+    out Sparks $strike * (1 + Flint) * (1 + 4 * Calloused) * (1 + 0.01 * Kindler * Tinder)
+    do add Strikes 1
 end
 
 action focus
@@ -40,6 +51,14 @@ action focus
     lasts 10
     boost all 3
     show if Kindler >= 5
+end
+
+action stoke
+    label Stoke
+    text Half fill the ember store at once.
+    out Embers cap(Embers) / 2
+    cooldown 90
+    show if L2
 end
 
 # ------------------------------------------------------------------ generators
@@ -65,6 +84,17 @@ rule blow
     out Sparks $bellows_rate
 end
 
+generator Hearth
+    text A great fire: makes sparks by the hundred.
+    cost Sparks 15000 * 1.19 ^ owned
+    show if Bellows >= 8
+end
+
+rule roar
+    appliesTo Hearth
+    out Sparks $hearth_rate
+end
+
 generator Forge
     text Burns sparks into embers.
     cost Sparks 1000 * 1.2 ^ owned
@@ -79,17 +109,23 @@ end
 
 generator Brazier
     text Holds 60% more embers.
-    cost Embers 40 * 1.5 ^ owned
+    cost Sparks 3000 * 1.8 ^ owned
+    cost Embers 40 * 1.45 ^ owned
     show if Embers >= 25
 end
 
 # ------------------------------------------------------------------ upgrades
 
 upgrade Flint
-    label Flint
     text Strikes give twice as much.
     cost Sparks 50
     show if total(Sparks) >= 20
+end
+
+upgrade Tinder
+    text Strikes give 1% more for every kindler.
+    cost Sparks 500
+    show if Kindler >= 10
 end
 
 upgrade DryWood
@@ -100,6 +136,13 @@ upgrade DryWood
     show if Kindler >= 5
 end
 
+upgrade Oak
+    text Kindlers make three times as much.
+    cost Sparks 100000
+    boost Kindler 3
+    show if Kindler >= 25
+end
+
 upgrade Leather
     label Leather bellows
     text Bellows make twice as much.
@@ -108,49 +151,32 @@ upgrade Leather
     show if Bellows >= 5
 end
 
+upgrade Chimney
+    text Hearths make twice as much.
+    cost Sparks 500000
+    boost Hearth 2
+    show if Hearth >= 5
+end
+
+upgrade Tongs
+    text Forges work twice as fast.
+    cost Sparks 20000
+    cost Embers 30
+    boost Forge 2
+    show if Forge >= 3
+end
+
 upgrade Glow
     label Ember glow
-    text Every ember you hold makes sparks 1% faster.
+    text Every ember you hold makes sparks 1% faster, up to three times as fast.
     cost Embers 40
-    boost Sparks 1 + 0.01 * Embers
+    boost Sparks min(3, 1 + 0.01 * Embers)
     show if Embers >= 20
 end
 
 upgrade Thrift
-    text Generators cost 10% less.
+    text Everything costs 10% less.
     cost Embers 100
     discount all 0.9
     show if Brazier >= 1
-end
-
-# ------------------------------------------------------------------ milestones
-
-milestone hundred
-    label A hundred sparks
-    if total(Sparks) >= 100
-    do add Gems 1
-end
-
-milestone kindlers
-    label Ten kindlers
-    if Kindler >= 10
-    boost Kindler 1.5
-    do add Gems 1
-end
-
-milestone bonfire
-    label A million sparks
-    if ever(Sparks) >= 1e6
-    boost all 1.25
-    do add Gems 5
-end
-
-# ------------------------------------------------------------------ prestige
-
-prestige ascend
-    label Ascend
-    text Start again with nothing but your stars and gems.
-    gain Stars floor(sqrt(total(Sparks) / $ascend_at))
-    keep Gems
-    show if total(Sparks) >= $ascend_at / 2 or ascend > 0
 end

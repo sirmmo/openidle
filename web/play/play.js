@@ -18,6 +18,7 @@ const $ = (id) => document.getElementById(id);
 let session;
 let view = null;
 let autoplay = null;
+let showBought = false;
 const onlinePlayers = new Set();
 
 function esc(s) {
@@ -189,7 +190,37 @@ function render() {
     max.textContent = g.afford > 1 ? `Max (${g.afford >= 1000 ? '1000+' : g.afford})` : 'Max';
   });
 
-  const ups = view.upgrades.filter((u) => u.visible).sort((a, b) => a.bought - b.bought);
+  // Levels: milestones with `view kind level`. `view tier N` groups them: a tier with several
+  // levels is a branch, any one of which takes the player on.
+  const tiers = [];
+  view.milestones.filter((m) => m.view.kind === 'level').forEach((m, i) => {
+    const n = Number(m.view.tier) || i + 1;
+    let t = tiers.find((x) => x.n === n);
+    if (!t) tiers.push((t = { n, levels: [] }));
+    t.levels.push(m);
+  });
+  tiers.sort((a, b) => a.n - b.n);
+  $('levels').hidden = !tiers.length;
+  if (tiers.length) {
+    const reached = tiers.filter((t) => t.levels.some((m) => m.done));
+    const top = reached[reached.length - 1];
+    $('levelNow').textContent = top ? top.levels.filter((m) => m.done).map((m) => m.label).join(' + ') : 'Level 0';
+    $('levelPips').innerHTML = tiers.map((t) => `<span class="tier${t.levels.length > 1 ? ' branch' : ''}">` +
+      t.levels.map((m) => `<span class="pip${m.done ? ' done' : ''}" title="${esc(m.label)}${m.done ? '' : ': ' + esc(m.text)}"></span>`).join('') +
+      '</span>').join('');
+    const next = tiers.find((t) => !t.levels.some((m) => m.done));
+    const one = (m) => `<b title="${esc(m.text)}">${esc(m.label)}</b>`;
+    $('levelNext').innerHTML = !next ? 'Every level reached.'
+      : next.levels.length === 1 ? `Next: ${one(next.levels[0])}${next.levels[0].text ? ' — ' + esc(next.levels[0].text) : ''}`
+      : `Next, one of: ${next.levels.map(one).join(' or ')}`;
+  }
+
+  const shown = view.upgrades.filter((u) => u.visible);
+  const bought = shown.filter((u) => u.bought).length;
+  $('upgCount').textContent = shown.length ? `${bought} / ${shown.length}` : '';
+  $('showBought').hidden = !bought;
+  $('showBought').textContent = showBought ? 'Hide bought' : `Show bought`;
+  const ups = shown.filter((u) => showBought || !u.bought || u.view.kind === 'path').sort((a, b) => a.bought - b.bought);
   $('upgrades').querySelectorAll('.empty').forEach((e) => e.remove());
   keyed($('upgrades'), ups, (u) => {
     const d = document.createElement('div');
@@ -199,24 +230,28 @@ function render() {
     return d;
   }, (d, u) => {
     d.classList.toggle('bought', u.bought);
+    d.classList.toggle('path', u.view.kind === 'path');
     d.querySelector('.name').textContent = u.label;
-    d.querySelector('.badge').textContent = u.bought ? 'bought' : u.scope === 'world' ? 'for everyone' : '';
+    d.querySelector('.badge').textContent = u.bought ? (u.view.kind === 'path' ? 'chosen' : 'bought') : u.scope === 'world' ? 'for everyone' : u.view.kind === 'path' ? 'choose one' : '';
     d.querySelector('.d').textContent = u.text;
     d.querySelector('.cost').innerHTML = u.bought ? '' : costHtml(u.cost);
     d.querySelector('button').disabled = !u.can;
   });
-  if (!ups.length) $('upgrades').insertAdjacentHTML('beforeend', '<div class="empty">Nothing yet.</div>');
+  if (!ups.length) $('upgrades').insertAdjacentHTML('beforeend', `<div class="empty">${bought ? 'All bought.' : 'Nothing yet.'}</div>`);
 
-  const miles = view.milestones.filter((m) => m.visible || m.done);
+  const goals = view.milestones.filter((m) => m.view.kind !== 'level' && (m.visible || m.done));
+  $('goalCount').textContent = goals.length ? `${goals.filter((m) => m.done).length} / ${goals.length}` : '';
+  const miles = [...goals.filter((m) => !m.done), ...goals.filter((m) => m.done)];
   keyed($('milestones'), miles, () => {
     const d = document.createElement('div');
     d.className = 'card mile';
-    d.innerHTML = '<span class="dot"></span><span class="txt"></span>';
+    d.innerHTML = '<span class="dot"></span><span><span class="txt"></span><small></small></span>';
     return d;
   }, (d, m) => {
     d.classList.toggle('done', m.done);
     d.title = m.text;
     d.querySelector('.txt').textContent = m.label + (m.scope === 'world' ? ' (world)' : '');
+    d.querySelector('small').textContent = m.text;
   });
 
   if (online) {
@@ -263,6 +298,7 @@ function nameOf(id) {
 }
 
 async function main() {
+  $('showBought').onclick = () => { showBought = !showBought; render(); };
   const call = await engine('../openidle.wasm');
   if (online) {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';

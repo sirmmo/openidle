@@ -42,11 +42,15 @@ OI_SITE=web ./target/release/openidle-server           # together: http://localh
 and every `--every` seconds what it has and makes:
 
 ```text
-0:00:17 milestone A hundred sparks
-0:02:18 milestone The beacon is lit
-0:03:20 prestige  Ascend {"Stars":"1"}
-0:08:03 upgrade   Lighthouse (for everyone)
-0:10:00 == Sparks 40.86K (7.74K/s), Embers 92.16 (84/s), Stars 4 (0/s), ... | 65 Kindler, 42 Bellows, 24 Forge
+0:01:33 milestone Level 2 · The forge
+0:02:16 milestone The beacon is lit
+0:04:52 milestone Level 3 · The Iron Age
+0:06:54 milestone Level 4 · The Age of Light
+0:11:23 milestone Level 5 · Clockwork
+0:22:39 prestige  Ascend {"Stars":"1"}
+0:30:00 == Sparks 1.03B (836.94M/s), Embers 186.08K (71.44K/s), Iron 15.38K (6.59K/s), ... | 127 Kindler, 98 Bellows, ...
+2:07:53 prestige  Supernova {"Novae":"1"}
+6:02:12 prestige  Big Bang {"Universes":"1"}
 ```
 
 ## A game
@@ -87,8 +91,10 @@ rule feed                    # every player's kindlers feed it
 end
 ```
 
-`games/sparks` is the demo: every feature of the engine in a small game (the theme of a real
-game comes later).
+`games/sparks` is the demo: every feature of the engine in one game. It has eleven levels,
+from a hearth to a multiverse, over about a day of play. Two of them branch: at level 5 you
+choose Clockwork, Alchemy or Glassworks, and at level 7 a comet or a nebula. Ascending lets you
+choose again. Three prestiges are stacked: Ascend, Supernova and the Big Bang.
 
 ## Layout
 

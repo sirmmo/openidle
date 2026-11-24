@@ -1,0 +1,58 @@
+# Level 4: light. Lanterns burn embers into light; mirrors make lanterns brighter. Light is
+# what telescopes are made of, and lanterns feed the beacon.
+
+milestone L4
+    view tier 4
+    label Level 4 · The Age of Light
+    text Make $light_age_at iron in all.
+    if ever(Iron) >= $light_age_at
+    do add Gems 3
+    view kind level
+end
+
+resource Light
+    text Lanterns burn embers into light.
+    show if L4
+    view color #fff3b0
+end
+
+generator Lantern
+    text Burns embers into light, and feeds the beacon.
+    cost Iron 150 * 1.25 ^ owned
+    show if L4
+end
+
+rule shine
+    appliesTo Lantern
+    in Embers $lantern_burn
+    out Light $lantern_make
+end
+
+generator Mirror
+    text Each mirror makes lanterns 15% brighter.
+    cost Light 100 * 1.3 ^ owned
+    boost Lantern 1 + 0.15 * Mirror
+    show if Light >= 30
+end
+
+upgrade Wicks
+    text Lanterns twice as bright.
+    cost Light 300
+    boost Lantern 2
+    show if Lantern >= 3
+end
+
+upgrade Lens
+    text Sparks 25% faster for every tenfold of light you hold.
+    cost Light 2000
+    boost Sparks 1 + 0.25 * log10(1 + Light)
+    show if Mirror >= 3
+end
+
+upgrade Prism
+    text Forges make twice the embers.
+    cost Light 5000
+    cost Iron 5000
+    boost Embers 2
+    show if Mirror >= 5
+end

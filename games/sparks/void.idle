@@ -1,0 +1,102 @@
+# Levels 9 to 11: the void, the Big Bang and the multiverse. Singularities pull dark matter out
+# of nothing; dark matter buys what even a supernova keeps. The Big Bang trades every nova for
+# universes, which stay for ever.
+
+milestone L9
+    view tier 9
+    label Level 9 · The void
+    text After a supernova, build singularities and gather $void_goal dark matter.
+    if ever(Dark) >= $void_goal
+    do add Gems 10
+    view kind level
+end
+
+milestone L10
+    view tier 10
+    label Level 10 · The Big Bang
+    text Make a universe.
+    if bigbang >= 1
+    do add Gems 20
+    view kind level
+end
+
+milestone L11
+    view tier 11
+    label Level 11 · The multiverse
+    text Hold $multiverse_at universes.
+    if Universes >= $multiverse_at
+    do add Gems 50
+    view kind level
+end
+
+resource Dark
+    label Dark matter
+    text Pulled from the void by singularities. Kept when you ascend and when you go supernova.
+    show if L8
+    view color #b18cff
+end
+
+resource Universes
+    text Made by the Big Bang, kept for ever. Each one adds the whole of your output again, and of your stardust and dark matter.
+    show if Universes > 0 or L9
+    boost all 1 + Universes
+    boost Stardust 1 + Universes
+    boost Dark 1 + Universes
+    view color #ffffff
+end
+
+generator Singularity
+    text Pulls dark matter from the void: more for every nova. Kept when you ascend and go supernova.
+    cost Stardust 1e5 * 1.6 ^ owned
+    show if L8
+end
+
+rule pull
+    appliesTo Singularity
+    out Dark 0.01 * (1 + Novae)
+end
+
+upgrade Horizon
+    label Event horizon
+    text Everything three times as fast.
+    cost Dark 10
+    boost all 3
+    show if L8
+end
+
+upgrade Tidal
+    label Tidal pull
+    text Ascending gives twice the stars.
+    cost Dark 50
+    show if Horizon
+end
+
+upgrade Hawking
+    text Going supernova gives twice the novae.
+    cost Dark 200
+    show if Tidal
+end
+
+upgrade Wormhole
+    text Singularities three times as fast.
+    cost Dark 1000
+    boost Singularity 3
+    show if Hawking
+end
+
+upgrade Quasar
+    text Everything twice as fast for every tenfold of dark matter you hold.
+    cost Dark 5000
+    boost all 1 + log10(1 + Dark)
+    show if Wormhole
+end
+
+prestige bigbang
+    label Big Bang
+    text Everything goes, novae, dark matter and the void with it; universes come, for ever. Gems and the gem shop stay.
+    gain Universes floor(sqrt(Novae / $bang_at))
+    if gain >= 1
+    keep Gems Strikes
+    keep $gem_shop
+    show if Novae >= $bang_at / 2 or bigbang > 0
+end

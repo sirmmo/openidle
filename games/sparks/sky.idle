@@ -1,0 +1,67 @@
+# Level 7: two skies. With stardust you choose one, the comet (for those who click) or the
+# nebula (for those who wait). It is kept when you ascend, and lost when you go supernova.
+
+upgrade Comet
+    label Sky of the comet
+    text Until your next supernova: actions three times as strong, and the comet to call down.
+    cost Stardust $sky_cost
+    if not Nebula
+    boost actions 3
+    show if L6
+    view kind path
+end
+
+milestone L7a
+    view tier 7
+    label Level 7 · The comet
+    text Choose the comet's sky and call down $comet_goal comets.
+    if Comets >= $comet_goal
+    do add Gems 5
+    view kind level
+end
+
+resource Comets
+    text Comets called down.
+    hidden
+end
+
+action cometfall
+    label Comet
+    text Call down a comet: everything three times as fast for twenty seconds.
+    cooldown 180
+    lasts 20
+    boost all 3
+    do add Comets 1
+    show if Comet
+end
+
+upgrade Nebula
+    label Sky of the nebula
+    text Until your next supernova: three times as much stardust, and star cradles to build.
+    cost Stardust $sky_cost
+    if not Comet
+    boost Stardust 3
+    show if L6
+    view kind path
+end
+
+milestone L7b
+    view tier 7
+    label Level 7 · The nebula
+    text Choose the nebula's sky and build $cradle_goal star cradles.
+    if Starcradle >= $cradle_goal
+    do add Gems 5
+    view kind level
+end
+
+generator Starcradle
+    label Star cradle
+    text Gathers stardust from the nebula: more for every star you have. Kept when you ascend.
+    cost Stardust 200 * 1.4 ^ owned
+    show if Nebula
+end
+
+rule cradle
+    appliesTo Starcradle
+    out Stardust 0.5 * (1 + Stars)
+end

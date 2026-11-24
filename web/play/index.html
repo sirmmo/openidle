@@ -53,11 +53,15 @@ section h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; c
 .act small { display: block; font-weight: 400; font-size: 12px; color: var(--dim); }
 .act.active { box-shadow: 0 0 0 2px var(--accent) inset; }
 .upg.bought { opacity: .55; }
+.upg.path { border-style: dashed; border-color: var(--accent); }
+.upg.path.bought { border-style: solid; opacity: 1; }
 .upg.bought .btn { display: none; }
 .badge { font-size: 11px; color: var(--dim); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
 .mile { display: flex; gap: 8px; align-items: center; font-size: 14px; padding: 6px 10px; }
 .mile .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); flex: none; }
 .mile.done .dot { background: var(--good); }
+.mile small { display: block; font-size: 12px; color: var(--dim); }
+.mile.done small { display: none; }
 .prest { border-color: #8ab4ff55; }
 .players .p { display: flex; justify-content: space-between; font-size: 14px; padding: 3px 0; }
 .players .p.me { color: var(--accent); }
@@ -76,6 +80,17 @@ dialog { background: var(--panel); color: var(--text); border: 1px solid var(--l
 dialog::backdrop { background: #000a; }
 dialog textarea { width: 100%; height: 120px; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; font: 12px monospace; }
 .empty { color: var(--dim); font-size: 13px; font-style: italic; }
+#levels { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; padding: 12px 20px 0; }
+#levels .now { font-weight: 700; font-size: 17px; }
+#levels .pips { display: flex; gap: 4px; align-items: center; }
+#levels .tier { display: flex; flex-direction: column; gap: 2px; }
+#levels .pip { width: 26px; height: 6px; border-radius: 3px; background: var(--line); }
+#levels .branch .pip { height: 3px; }
+#levels .pip.done { background: var(--accent); }
+#levels .next { color: var(--dim); font-size: 13px; }
+#levels .next b { color: var(--text); font-weight: 600; }
+section h2 .count { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: 6px; }
+section h2 .chip { font-size: 11px; padding: 1px 8px; margin-left: 8px; text-transform: none; letter-spacing: 0; color: var(--dim); }
 #fatal { padding: 40px; color: var(--bad); white-space: pre-wrap; }
 </style>
 </head>
@@ -92,13 +107,14 @@ dialog textarea { width: 100%; height: 120px; background: var(--panel2); color: 
     <button class="chip" id="reset">Reset</button>
   </div>
 </header>
+<div id="levels" hidden><span class="now" id="levelNow"></span><span class="pips" id="levelPips"></span><span class="next" id="levelNext"></span></div>
 <div id="resources"></div>
 <main id="main">
   <section><h2>Actions</h2><div class="list" id="actions"></div>
     <div id="prestigeBox"><h2>Prestige</h2><div class="list" id="prestiges"></div></div></section>
   <section><h2>Generators</h2><div class="list" id="generators"></div></section>
-  <section><h2>Upgrades</h2><div class="list" id="upgrades"></div>
-    <h2>Milestones</h2><div class="list" id="milestones"></div></section>
+  <section><h2>Upgrades<span class="count" id="upgCount"></span><button class="chip" id="showBought" hidden></button></h2><div class="list" id="upgrades"></div>
+    <h2>Goals<span class="count" id="goalCount"></span></h2><div class="list" id="milestones"></div></section>
   <section id="social" hidden><h2>Players</h2><div class="card players" id="players"></div>
     <h2>Chat</h2><div class="card"><div id="chatlog"></div>
     <form id="chatform"><input id="chatinput" maxlength="300" placeholder="Say something"><button class="btn">Send</button></form></div></section>

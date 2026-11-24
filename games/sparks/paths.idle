@@ -1,0 +1,240 @@
+# Level 5: three paths. Each run, once you have light, you choose one: clockwork, alchemy or the
+# glassworks. The choice lasts until you ascend; each path's level, once reached, stays. Walk
+# all three for a goal of its own.
+
+# ------------------------------------------------------------------ clockwork
+
+upgrade Clockwork
+    label Path of clockwork
+    text For this run: clockmakers turn iron into gears, automatons drive every machine, and sparks come twice as fast.
+    cost Light $path_cost * $clockwork_cost
+    cost Iron 2 * $path_cost * $clockwork_cost
+    if not Alchemy and not Glassworks
+    boost Sparks 2
+    show if L4
+    view kind path
+end
+
+milestone L5a
+    view tier 5
+    label Level 5 · Clockwork
+    text Take the path of clockwork and make $path_goal gears.
+    if ever(Gears) >= $path_goal
+    do add Gems 3
+    view kind level
+end
+
+resource Gears
+    text Clockmakers cut them from iron.
+    show if Clockwork
+    view color #c8a46a
+end
+
+generator Clockmaker
+    text Turns iron into gears.
+    cost Iron 3000 * 1.25 ^ owned
+    show if Clockwork
+end
+
+rule wind
+    appliesTo Clockmaker
+    in Iron 5
+    out Gears 1
+end
+
+generator Automaton
+    text Each automaton makes kindlers, bellows, hearths, forges, smelters and lanterns 5% faster.
+    cost Gears 40 * 1.3 ^ owned
+    boost Kindler 1 + 0.05 * Automaton
+    boost Bellows 1 + 0.05 * Automaton
+    boost Hearth 1 + 0.05 * Automaton
+    boost Forge 1 + 0.05 * Automaton
+    boost Smelter 1 + 0.05 * Automaton
+    boost Lantern 1 + 0.05 * Automaton
+    show if Clockwork
+end
+
+rule tick
+    appliesTo Automaton
+    if Mainspring
+    out Sparks 1000
+end
+
+upgrade Escapement
+    text Clockmakers twice as fast.
+    cost Gears 150
+    boost Clockmaker 2
+    show if Clockmaker >= 3
+end
+
+upgrade Mainspring
+    text Automatons wind themselves: each makes a thousand sparks a second.
+    cost Gears 1000
+    show if Automaton >= 5
+end
+
+upgrade Orrery
+    text Telescopes three times as fast.
+    cost Gears 1e5
+    boost Telescope 3
+    show if Clockwork and L6
+end
+
+# ------------------------------------------------------------------ alchemy
+
+upgrade Alchemy
+    label Path of alchemy
+    text For this run: alembics turn embers and light into gold, homunculi tend the fires, and embers come twice as fast.
+    cost Light $path_cost * $alchemy_cost
+    cost Iron 2 * $path_cost * $alchemy_cost
+    if not Clockwork and not Glassworks
+    boost Embers 2
+    show if L4
+    view kind path
+end
+
+milestone L5b
+    view tier 5
+    label Level 5 · Alchemy
+    text Take the path of alchemy and make $path_goal gold.
+    if ever(Gold) >= $path_goal
+    do add Gems 3
+    view kind level
+end
+
+resource Gold
+    text Distilled from embers and light.
+    show if Alchemy
+    view color #ffd54a
+end
+
+generator Alembic
+    text Turns embers and light into gold.
+    cost Light 3000 * 1.25 ^ owned
+    show if Alchemy
+end
+
+rule distil
+    appliesTo Alembic
+    in Embers 20
+    in Light 2
+    out Gold 1
+end
+
+generator Homunculus
+    label Homunculus
+    text Each one makes forges, smelters and lanterns 10% faster, and alembics 5%.
+    cost Gold 40 * 1.32 ^ owned
+    boost Forge 1 + 0.1 * Homunculus
+    boost Smelter 1 + 0.1 * Homunculus
+    boost Lantern 1 + 0.1 * Homunculus
+    boost Alembic 1 + 0.05 * Homunculus
+    show if Alchemy
+end
+
+upgrade Athanor
+    text Alembics twice as fast.
+    cost Gold 150
+    boost Alembic 2
+    show if Alembic >= 3
+end
+
+upgrade Elixir
+    text Actions give five times as much.
+    cost Gold 500
+    boost actions 5
+    show if Homunculus >= 3
+end
+
+upgrade Stone
+    label Philosopher's stone
+    text Everything costs half.
+    cost Gold 5000
+    discount all 0.5
+    show if Homunculus >= 8
+end
+
+upgrade Aurum
+    text Three times as much stardust.
+    cost Gold 1e5
+    boost Stardust 3
+    show if Alchemy and L6
+end
+
+# ------------------------------------------------------------------ the glassworks
+
+upgrade Glassworks
+    label Path of glass
+    text For this run: kilns melt sparks and embers into glass, lensmakers sharpen every light, and light comes twice as fast.
+    cost Light $path_cost * $glass_cost
+    cost Iron 2 * $path_cost * $glass_cost
+    if not Clockwork and not Alchemy
+    boost Light 2
+    show if L4
+    view kind path
+end
+
+milestone L5c
+    view tier 5
+    label Level 5 · The glassworks
+    text Take the path of glass and make $path_goal glass.
+    if ever(Glass) >= $path_goal
+    do add Gems 3
+    view kind level
+end
+
+resource Glass
+    text Melted from sparks and embers.
+    show if Glassworks
+    view color #9fe6ff
+end
+
+generator Kiln
+    text Melts sparks and embers into glass.
+    cost Iron 3000 * 1.25 ^ owned
+    show if Glassworks
+end
+
+rule melt
+    appliesTo Kiln
+    in Sparks 5000
+    in Embers 5
+    out Glass 1
+end
+
+generator Lensmaker
+    text Each one makes light and telescopes 10% faster.
+    cost Glass 40 * 1.3 ^ owned
+    boost Light 1 + 0.1 * Lensmaker
+    boost Telescope 1 + 0.1 * Lensmaker
+    show if Glassworks
+end
+
+upgrade Blowpipe
+    text Kilns twice as fast.
+    cost Glass 150
+    boost Kiln 2
+    show if Kiln >= 3
+end
+
+upgrade Stained
+    label Stained glass
+    text Lanterns three times as bright.
+    cost Glass 500
+    boost Lantern 3
+    show if Lensmaker >= 3
+end
+
+upgrade Crystal
+    text Sparks 50% faster for every tenfold of glass you hold.
+    cost Glass 5000
+    boost Sparks 1 + 0.5 * log10(1 + Glass)
+    show if Lensmaker >= 8
+end
+
+upgrade Spyglass
+    text Telescopes five times as fast.
+    cost Glass 1e5
+    boost Telescope 5
+    show if Glassworks and L6
+end

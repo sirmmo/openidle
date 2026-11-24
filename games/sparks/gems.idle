@@ -1,0 +1,69 @@
+# Gems: found at goals and by wishing, given to other players, spent in the gem shop. The shop
+# is kept through every prestige.
+
+resource Gems
+    text Found at goals. Gems can be given to other players.
+    show if Gems > 0
+    giftable
+    view color #5ee0c0
+end
+
+upgrade Polish
+    label Polished gem
+    text Everything 50% faster, for good.
+    cost Gems 10
+    boost all 1.5
+    show if Gems >= 5
+end
+
+upgrade Charm
+    text Actions give three times as much, for good.
+    cost Gems 15
+    boost actions 3
+    show if Polish
+end
+
+upgrade Facets
+    text Sparks 2% faster for every gem you hold, for good.
+    cost Gems 25
+    boost Sparks 1 + 0.02 * Gems
+    show if Polish
+end
+
+upgrade Hoard
+    text Everything costs 25% less, for good.
+    cost Gems 40
+    discount all 0.75
+    show if Facets
+end
+
+upgrade Heirloom
+    text Telescopes gather twice as much, for good.
+    cost Gems 60
+    boost Telescope 2
+    show if Hoard and L6
+end
+
+upgrade Hearthstone
+    text Hold ten times as many embers, for good.
+    cost Gems 80
+    show if Hoard
+end
+
+upgrade Lucky
+    label Lucky star
+    text Every wish gives a gem, for good.
+    cost Gems 120
+    show if Hearthstone and L6
+end
+
+upgrade Compass
+    text Paths and skies cost a hundredth, for good.
+    cost Gems 150
+    discount Clockwork 0.01
+    discount Alchemy 0.01
+    discount Glassworks 0.01
+    discount Comet 0.01
+    discount Nebula 0.01
+    show if Lucky
+end

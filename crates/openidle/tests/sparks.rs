@@ -8,8 +8,19 @@ use openidle::bot::Bot;
 use openidle::{Command, Game, Num, Save, World};
 
 fn game() -> Arc<Game> {
+    game_with(&[])
+}
+
+/// The demo with some parameters changed.
+fn game_with(sets: &[(&str, &str)]) -> Arc<Game> {
     let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../games/sparks");
-    Arc::new(Game::from_dir(&dir, &[]).expect("the demo game loads"))
+    let sets: Vec<(String, String)> = sets.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect();
+    Arc::new(Game::from_dir(&dir, &sets).expect("the demo game loads"))
+}
+
+/// The demo, quicker: the levels and the first star come in minutes.
+fn quick_game() -> Arc<Game> {
+    game_with(&[("iron_age_at", "50"), ("light_age_at", "20"), ("ascend_at", "1e5")])
 }
 
 fn amount(w: &World, p: &str, r: &str) -> f64 {
@@ -38,7 +49,10 @@ fn the_same_commands_give_the_same_world() {
         play(w, &["p1", "p2"], 600);
     }
     assert_eq!(a.fingerprint(), b.fingerprint());
-    assert!(amount(&a, "p1", "Stars") >= 1.0, "the bot ascended in ten minutes");
+    assert!(
+        amount(&a, "p1", "Iron") > 0.0,
+        "the bot reached the Iron Age in ten minutes"
+    );
 }
 
 #[test]
@@ -106,13 +120,24 @@ fn generators_produce_and_cost_more() {
 
 #[test]
 fn prestige_resets_and_keeps() {
-    let mut w = World::new(game(), 1);
+    let mut w = World::new(quick_game(), 1);
     w.join("p1", "Ada");
-    play(&mut w, &["p1"], 200);
+    play(&mut w, &["p1"], 600);
     let v = w.view("p1").unwrap();
     let asc = &v["prestiges"][0];
-    assert_eq!(asc["count"], 1, "{asc}");
-    assert!(amount(&w, "p1", "Gems") >= 2.0);
+    assert!(asc["count"].as_u64().unwrap() >= 1, "{asc}");
+    assert!(amount(&w, "p1", "Stars") + amount(&w, "p1", "Novae") >= 1.0);
+    // Levels are milestones, and milestones stay through a prestige.
+    let level = |id: &str| {
+        v["milestones"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|m| m["id"] == id)
+            .unwrap()["done"]
+            == true
+    };
+    assert!(level("L3") && level("L6"), "the levels stay");
     // A fresh run has no Forge yet.
     let mut fresh = World::new(game(), 1);
     fresh.join("p1", "Ada");

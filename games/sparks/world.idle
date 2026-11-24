@@ -2,7 +2,7 @@
 
 resource Beacon
     scope world
-    text Every kindler in the world feeds the beacon; it fades a little every second.
+    text Every kindler and lantern in the world feeds the beacon; it fades a little every second.
     show if Beacon > 0
     view color #ffe08a
 end
@@ -10,6 +10,11 @@ end
 rule feed
     appliesTo Kindler
     out Beacon $beacon_share
+end
+
+rule beam
+    appliesTo Lantern
+    out Beacon $lantern_share
 end
 
 rule fade
@@ -25,10 +30,34 @@ milestone lit
     boost Sparks 1.5
 end
 
+milestone blaze
+    label The beacon blazes
+    scope world
+    text Once the beacon has held 10,000, everyone's light comes twice as fast, for good.
+    if Beacon >= 1e4
+    boost Light 2
+end
+
+milestone network
+    label A hundred lanterns in the world
+    scope world
+    text When the world has a hundred lanterns at once, everything is 25% faster for everyone.
+    if sum(Lantern) >= 100
+    boost all 1.25
+end
+
 upgrade Lighthouse
     scope world
-    text Built from the beacon by anyone, for everyone: everything twice as fast.
-    cost Beacon 500
-    boost all 2
-    show if Beacon >= 50
+    text Built from the beacon by anyone, for everyone: sparks twice as fast.
+    cost Beacon 5000
+    boost Sparks 2
+    show if Beacon >= 500
+end
+
+upgrade Observatory
+    scope world
+    text Built from the beacon by anyone, for everyone: twice as much stardust.
+    cost Beacon 50000
+    boost Stardust 2
+    show if Beacon >= 1e4
 end

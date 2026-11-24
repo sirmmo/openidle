@@ -1,7 +1,7 @@
-# The demo: every feature of the engine in a small game. The real game's theme comes later.
+# The demo: a game that uses every feature of the engine, in eleven levels, two of them with branches.
 name = "Sparks"
-description = "Strike sparks, build kindlers and bellows, forge embers, ascend for stars, and feed the beacon everyone shares."
-scripts = ["sparks.idle", "world.idle"]
+description = "Strike sparks, forge embers, smelt iron, light lanterns, choose a path, ascend for stars, choose a sky, go supernova, fall into the void, make universes, and feed the beacon everyone shares."
+scripts = ["hearth.idle", "iron.idle", "light.idle", "paths.idle", "stars.idle", "sky.idle", "void.idle", "gems.idle", "goals.idle", "world.idle"]
 tick = 0.2            # seconds
 offline_max = 28800   # eight hours of progress for time away
 score = "ever(Sparks)"

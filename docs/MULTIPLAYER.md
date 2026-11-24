@@ -7,9 +7,10 @@ anyone, for everyone), milestones (reached once by the whole world), and rules t
 world itself. Expressions read the others too: `players`, `sum(Kindler)`, `best(Stars)`,
 `contrib(Beacon)`. Players can give each other `giftable` resources.
 
-The demo's beacon is the smallest example: every kindler in the world feeds it, it fades, and
-once it has held 100 everyone's sparks are faster; anyone can spend it on the Lighthouse, which
-doubles everything for everyone.
+The demo's beacon is the smallest example: every kindler and lantern in the world feeds it, it
+fades, and once it has held 100 everyone's sparks are faster (at 10,000, everyone's light);
+anyone can spend it on the Lighthouse or the Observatory, for everyone. When the world has a
+hundred lanterns at once, everything is faster for everyone.
 
 ## How it stays in step
 
