@@ -129,6 +129,8 @@ pub struct Prestige {
     pub need: Vec<Expr>,
     pub keep: Vec<Thing>,
     pub reset: Vec<Thing>,
+    /// Generators that follow into the next run, each up to its cap (`carry A B max expr`).
+    pub carry: Vec<(Vec<usize>, Expr)>,
     pub effects: Vec<Effect>,
 }
 
@@ -592,6 +594,29 @@ impl Compiler<'_> {
             .collect()
     }
 
+    /// `carry Peddler Bard max 2 + Legend`: generators kept through a prestige, each up to the
+    /// cap (worked out after the reset and the gains, `gain` and `owned` as before it).
+    fn carry(&self, l: &Line) -> Result<(Vec<usize>, Expr), Error> {
+        let (names, cap) = l
+            .rest
+            .split_once(" max ")
+            .ok_or_else(|| self.b.err(l, "`carry` needs generators, `max` and a cap"))?;
+        let gens = names
+            .split(|c: char| c.is_whitespace() || c == ',')
+            .filter(|s| !s.is_empty())
+            .map(|s| match self.g.ids.get(s) {
+                Some(Thing::Gen(i)) => Ok(*i),
+                Some(_) => Err(self.b.err(l, format!("`{s}` is not a generator"))),
+                None => Err(self.b.err(l, format!("no generator `{s}`"))),
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        if gens.is_empty() {
+            return Err(self.b.err(l, "`carry` needs generators"));
+        }
+        let with_owned = |w: &str| if w == "owned" { Some(Ref::Owned) } else { with_gain(w) };
+        Ok((gens, self.expr(l, cap, &with_owned)?))
+    }
+
     fn seconds(&self, l: &Line) -> Result<u64, Error> {
         let e = self.expr(l, &l.rest, &|_| None)?;
         let s = e
@@ -918,6 +943,7 @@ impl Compiler<'_> {
                     need: Vec::new(),
                     keep: Vec::new(),
                     reset: Vec::new(),
+                    carry: Vec::new(),
                     effects: Vec::new(),
                 };
                 for l in &b.lines {
@@ -929,6 +955,7 @@ impl Compiler<'_> {
                         "if" | "need" => p.need.push(self.expr(l, &l.rest, &with_gain)?),
                         "keep" => p.keep.extend(self.things(l)?),
                         "reset" => p.reset.extend(self.things(l)?),
+                        "carry" => p.carry.push(self.carry(l)?),
                         "do" => p.effects.push(self.effect(l, &with_gain)?),
                         "boost" => self.boost(l, false, &general)?,
                         "discount" => self.boost(l, true, &general)?,

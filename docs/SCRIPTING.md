@@ -181,12 +181,16 @@ prestige ascend
     if gain >= 1                   # needed (default: the first gain is more than 0)
     keep Gems Flint                # kept through the reset
     reset kindlers                 # also reset (milestones are kept unless listed)
+    carry Kindler max 5 + Stars    # these follow into the next run, each up to the cap
     do add Gems gain               # effects after the reset; `gain` is the first gain
 end
 ```
 
 A prestige resets every player resource to its `start` (and its `total` to 0), every
 generator to its `start` and every player upgrade, except what `keep` lists and what it gains.
+A `carry` line names generators that follow into the next run, each up to its cap. The cap is
+worked out after the reset and the gains (so `Stars` above is the new amount); `owned` in it is
+how many the player had, and `gain` the first gain. A generator never drops below its `start`.
 Milestones, `ever` amounts, contributions and what the player has seen are kept. Its count is its
 value in expressions (how many times the player took it).
 

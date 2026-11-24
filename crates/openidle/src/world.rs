@@ -970,6 +970,7 @@ impl World {
         };
         let keep = |t: Thing| pr.keep.contains(&t);
         let reset = |t: Thing| pr.reset.contains(&t);
+        let before: Vec<u64> = self.s.players[p].owned.clone();
         let tick = self.s.tick;
         let pl = &mut self.s.players[p];
         for (r, res) in g.resources.iter().enumerate() {
@@ -1003,6 +1004,20 @@ impl World {
         let caps: Vec<Option<Num>> = gains.iter().map(|(r, _)| self.cap(Some(p), *r)).collect();
         for ((r, x), cap) in gains.iter().zip(caps) {
             self.give(Some(p), *r, *x, cap, false);
+        }
+        // The generators that follow, each up to its cap.
+        let mut carried = Vec::new();
+        for (gens, cap) in &pr.carry {
+            for &k in gens {
+                let mut ctx = Ctx::new(&g, &self.s, Some(p));
+                ctx.owned = before[k];
+                ctx.gain = gains[0].1;
+                let cap = cap.eval(&ctx).to_f64().floor().max(0.0) as u64;
+                carried.push((k, before[k].min(cap).max(g.generators[k].start)));
+            }
+        }
+        for (k, n) in carried {
+            self.s.players[p].owned[k] = n;
         }
         self.apply_effects(Some(p), &pr.effects, gains[0].1);
         let got: BTreeMap<&str, Num> = gains
