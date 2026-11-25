@@ -1,0 +1,46 @@
+# Uploads OpenIdle's games to Wavedash (https://wavedash.com) as new builds, by hand only
+# (Actions > Wavedash > Run workflow). Publishing a build stays a separate step:
+# `wavedash publish <BUILD_ID>`, or the Developer Portal.
+# Needs the repository secret WAVEDASH_TOKEN and, per game, the repository variable
+# WAVEDASH_GAME_ID_<GAME> (e.g. WAVEDASH_GAME_ID_SPARKS) with its Wavedash project id.
+name: Wavedash
+
+on:
+  workflow_dispatch:
+    inputs:
+      game:
+        description: Game to upload
+        type: choice
+        options: [all, sparks]
+        default: all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wavedash
+  cancel-in-progress: false
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # As in the Pages workflow; tools/wavedash.sh builds the engine and the games' bundles.
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Install the Wavedash CLI
+        run: |
+          curl -fsSL https://wavedash.com/cli/install.sh | sh
+          echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> "$GITHUB_PATH"
+      - name: Build and upload
+        run: |
+          wavedash --version
+          sh tools/wavedash.sh "$GAME"
+        env:
+          GAME: ${{ inputs.game }}
+          WAVEDASH_TOKEN: ${{ secrets.WAVEDASH_TOKEN }}
+          WAVEDASH_MESSAGE: Build ${{ github.sha }}
+          WAVEDASH_GAME_ID_SPARKS: ${{ vars.WAVEDASH_GAME_ID_SPARKS }}

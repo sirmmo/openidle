@@ -2,3 +2,4 @@ target/
 data/
 web/openidle.wasm
 web/games/*.json
+wavedash/*/build/

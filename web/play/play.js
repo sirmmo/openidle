@@ -361,9 +361,11 @@ async function main() {
     };
   }
   setInterval(soon, 250);
+  window.WavedashHook?.ready(); // on Wavedash: the game is drawn, show it
 }
 
 main().catch((e) => {
   document.body.innerHTML = `<div id="fatal">Could not start: ${esc(e.message)}</div>`;
   console.error(e);
+  window.WavedashHook?.ready();
 });

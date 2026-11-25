@@ -123,3 +123,29 @@ let save = world.save();            // serde: by ids, so saves survive changes t
 ## Licence
 
 GPL-3.0-or-later.
+
+## Publishing on Wavedash
+
+Each game can be its own game on [Wavedash](https://wavedash.com)
+([docs](https://docs.wavedash.com)), configured in `wavedash/<game>/wavedash.toml`; today
+`wavedash/sparks/` publishes the demo. Another game gets there with a copy of that folder renamed
+after it, its id, and its name added to the workflow's `options` and `env`.
+
+1. **Create the game** in the Wavedash Developer Portal, or with the CLI (`curl -fsSL
+   https://wavedash.com/cli/install.sh | sh`, `wavedash auth login`, then `wavedash project create
+   --title "Sparks" --team-id <TEAM_ID>`).
+2. **Set its id**: `game_id` in its `wavedash.toml`, or, to keep it out of the repository,
+   `WAVEDASH_GAME_ID_<GAME>` in the environment and as a repository variable (Settings › Secrets and
+   variables › Actions › Variables), e.g. `WAVEDASH_GAME_ID_SPARKS`.
+3. **Upload a build**: `sh tools/wavedash.sh [game]` builds the engine and the bundles as the Pages
+   workflow does, copies the player into `wavedash/<game>/build/` (at its root, opening that game
+   without `?game=`; alone, not online) and, with the CLI on `PATH` and `WAVEDASH_TOKEN` set, runs
+   `wavedash build push`. Without the CLI (or with `WAVEDASH_DRY_RUN=1`) it only says what it would
+   push. On GitHub: Actions › Wavedash › Run workflow, with the secret `WAVEDASH_TOKEN`.
+4. **Publish it**: `wavedash publish <BUILD_ID>` (the id `build push` printed), or in the Developer
+   Portal.
+
+On Wavedash the game stays behind Wavedash's loading screen until it calls `Wavedash.init()`:
+`web/play/play.js` does it through `web/play/wavedash.js` once the game is drawn, or when it could
+not start, to show why. Elsewhere (GitHub Pages, a local server) there is no `Wavedash` object and
+the calls do nothing.
